@@ -1,0 +1,14 @@
+{
+  "test_data_path": "dataset/SMAP_test.npy",
+  "test_label_path": "dataset/SMAP_test_label.npy",
+  "divisions_path": "",
+  "estimation_path": "estimations/estimation.npy",
+  "ewma_smoothing": true,
+  "ewma_smoothing_weight": 0.9,
+  "compute_f1_pa": true,
+  "save_figures_path": "figures/",
+  "outfile_path": "metric_results/metric_results.npz",
+  "min_anomaly_rate": 0.001,
+  "max_anomaly_rate": 0.3,
+  "step_anomaly_rate": 0.001
+}

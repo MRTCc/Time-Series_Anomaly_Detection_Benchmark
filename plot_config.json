@@ -1,0 +1,17 @@
+{
+  "plot_data": true,
+  "data_path": "dataset/SMAP_test.npy",
+  "channels_to_plot": [0,1,2],
+  "plot_labels_and_estimations": true,
+  "label_path": "dataset/SMAP_test_label.npy",
+  "estimation_path": "estimations/estimation.npy",
+  "plot_labels_estimations_predictions": true,
+  "anomaly_rate": 0.05,
+  "plot_f1_anomaly_rate": true,
+  "plot_f1_pa_anomaly_rate": true,
+  "plot_precision_anomaly_rate": true,
+  "plot_recall_anomaly_rate": true,
+  "metric_results_path": "metric_results/metric_results.npz",
+  "plot_confusion_matrix": true,
+  "outfile_path": "plot/plot.png"
+}
