@@ -1,0 +1,4 @@
+{
+  "in_file": "metric_results/metric_results_mtad_gat.npz",
+  "out_file": "metric_results/metric_results_mtad_gat.txt"
+}

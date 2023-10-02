@@ -80,6 +80,42 @@ def compute_f1_score(test_labels, estimations, divisions, min_anomaly_rate, max_
             raise SystemError("Not yet implemented!")
 
 
+def compute_metrics(cfg_file):
+    print("Loading configuration data...")
+    with open(cfg_file, 'r') as cfg_file:
+        cfg = json.load(cfg_file)
+
+        test_data = np.load(cfg['test_data_path'])
+        test_labels = np.load(cfg['test_label_path']).copy().astype(np.int32)
+
+        if cfg['divisions_path'] == "":
+            divisions = [[0, len(test_data)]]
+        else:
+            with open(cfg['divisions_path'], 'r') as divisions_file:
+                divisions = json.load(divisions_file)
+
+        estimations = np.load(cfg["estimation_path"])
+
+        print("Computing f1_score...")
+        evaluation_f1, confusion_matrices = compute_f1_score(test_labels, estimations, divisions,
+                                                             cfg["min_anomaly_rate"],
+                                                             cfg["max_anomaly_rate"], cfg["step_anomaly_rate"])
+
+        evaluation_f1_pa = None
+        if cfg["compute_f1_pa"] is True:
+            print("Computing f1_pa_score...")
+            evaluation_f1_pa, confusion_matrices_pa = compute_f1_score(test_labels, estimations, divisions,
+                                                                       cfg["min_anomaly_rate"], cfg["max_anomaly_rate"],
+                                                                       cfg["step_anomaly_rate"], adjustment=True)
+
+        if evaluation_f1_pa is not None:
+            np.savez(cfg["outfile_path"], f1_score=evaluation_f1, f1_pa_score=evaluation_f1_pa,
+                     confusion_matrices=confusion_matrices, confusion_matrices_pa=confusion_matrices_pa)
+        else:
+            np.savez(cfg["outfile_path"], f1_score=evaluation_f1, confusion_matrices=confusion_matrices)
+    print("Computation done!")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='compute_metrics.py',
@@ -103,15 +139,16 @@ if __name__ == "__main__":
         estimations = np.load(cfg["estimation_path"])
 
         print("Computing f1_score...")
-        evaluation_f1, confusion_matrices = compute_f1_score(test_labels, estimations, divisions, cfg["min_anomaly_rate"],
-                                         cfg["max_anomaly_rate"], cfg["step_anomaly_rate"])
+        evaluation_f1, confusion_matrices = compute_f1_score(test_labels, estimations, divisions,
+                                                             cfg["min_anomaly_rate"],
+                                                             cfg["max_anomaly_rate"], cfg["step_anomaly_rate"])
 
         evaluation_f1_pa = None
         if cfg["compute_f1_pa"] is True:
             print("Computing f1_pa_score...")
             evaluation_f1_pa, confusion_matrices_pa = compute_f1_score(test_labels, estimations, divisions,
-                                                cfg["min_anomaly_rate"], cfg["max_anomaly_rate"],
-                                                cfg["step_anomaly_rate"], adjustment=True)
+                                                                       cfg["min_anomaly_rate"], cfg["max_anomaly_rate"],
+                                                                       cfg["step_anomaly_rate"], adjustment=True)
 
         if evaluation_f1_pa is not None:
             np.savez(cfg["outfile_path"], f1_score=evaluation_f1, f1_pa_score=evaluation_f1_pa,

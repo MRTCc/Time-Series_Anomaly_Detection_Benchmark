@@ -105,6 +105,61 @@ def plot_confusion_matrix(conf_matr, file_path, plot_title):
     plt.show()
 
 
+def plot(cfg_file):
+    print("[INFO] Loading configuration file...")
+    with open(cfg_file, 'r') as cfg_file:
+        cfg = json.load(cfg_file)
+
+        print("[INFO] Loading data...")
+        data = np.load(cfg['data_path'])
+        labels = np.load(cfg['label_path']).copy().astype(np.int32)
+        outfile_path = cfg["outfile_path"]
+
+        print("[INFO] Plotting...")
+        if cfg["plot_data"]:
+            channels = cfg["channels_to_plot"]
+            plot_data(data, channel_list=channels, file_path=outfile_path)
+
+        if cfg["plot_labels_and_estimations"]:
+            estimations = np.load(cfg["estimation_path"])
+            plot_labels_estimations(labels, estimations, outfile_path)
+
+        if cfg["plot_labels_estimations_predictions"]:
+            # TODO: aggiungere la feature di predictions con point adjustment (priorità media)
+            estimations = np.load(cfg["estimation_path"])
+            predictions = get_y_pred(estimations=estimations, anomaly_rate=cfg["anomaly_rate"])
+            plot_labels_estimations_predictions(labels, estimations, predictions, outfile_path, cfg["anomaly_rate"])
+
+        if cfg["plot_f1_anomaly_rate"]:
+            data = np.load(cfg["metric_results_path"])["f1_score"]
+            plot_xy(ax=data[:, 0], ay=data[:, 3], label="anomaly_rate-f1_score", xlabel="anomaly_rate",
+                    ylabel="f1_score", plot_title="anomaly_rate-f1_score", file_path=outfile_path)
+
+        if cfg["plot_f1_pa_anomaly_rate"]:
+            data = np.load(cfg["metric_results_path"])["f1_pa_score"]
+            plot_xy(ax=data[:, 0], ay=data[:, 3], label="anomaly_rate-f1_pa_score", xlabel="anomaly_rate",
+                    ylabel="f1_pa_score", plot_title="anomaly_rate-f1_pa_score", file_path=outfile_path)
+
+        if cfg["plot_precision_anomaly_rate"]:
+            # TODO: nota che, per ora, precision e recall si riferiscono alla f1-score (NON alla f1-pa-score)
+            data = np.load(cfg["metric_results_path"])["f1_score"]
+            plot_xy(ax=data[:, 0], ay=data[:, 1], label="anomaly_rate-precision", xlabel="anomaly_rate",
+                    ylabel="precision", plot_title="anomaly_rate-precision", file_path=outfile_path)
+
+        if cfg["plot_recall_anomaly_rate"]:
+            data = np.load(cfg["metric_results_path"])["f1_score"]
+            plot_xy(ax=data[:, 0], ay=data[:, 1], label="anomaly_rate-recall", xlabel="anomaly_rate",
+                    ylabel="recall", plot_title="anomaly_rate-recall", file_path=outfile_path)
+
+        if cfg["plot_confusion_matrix"]:
+            estimations = np.load(cfg["estimation_path"])
+            predictions = get_y_pred(estimations=estimations, anomaly_rate=cfg["anomaly_rate"])
+            conf_matr = confusion_matrix(labels, predictions)
+            plot_confusion_matrix(conf_matr, outfile_path, "confusion_matrix")
+
+    print("[INFO] Done!")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='plot_evaluation.py',
@@ -163,5 +218,4 @@ if __name__ == "__main__":
             predictions = get_y_pred(estimations=estimations, anomaly_rate=cfg["anomaly_rate"])
             conf_matr = confusion_matrix(labels, predictions)
             plot_confusion_matrix(conf_matr, outfile_path, "confusion_matrix")
-
-print("[INFO] Done!")
+    print("[INFO] Done!")

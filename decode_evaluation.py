@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-
+import json
 
 def print_score_line(score, out_file):
     print(f"anomaly rate: {float(score[0]):.5f} | precision: {float(score[1]):.5f}"
@@ -36,10 +36,37 @@ def write_txt_data(data, out_file, head_line: str = "F1-Score"):
     print("\n\n\n", file=out_file)
 
 
+def decode(cfg_file):
+    print("Loading configuration data...")
+    in_file = None
+    out_file = None
+    with open(cfg_file, 'r') as cfg_file:
+        cfg = json.load(cfg_file)
+        in_file = cfg["in_file"]
+        out_file = cfg["out_file"]
+
+    print("Loading data...")
+    with np.load(in_file) as data_file:
+        print("Parsing data...")
+        if out_file.split(".")[-1] == 'txt':
+            with open(out_file, 'w') as out_file:
+                for key in data_file:
+                    if key in 'confusion_matrices_pa':
+                        continue
+                    write_txt_data(data_file[key], out_file, head_line=key)
+        elif out_file.split(".")[-1] == 'csv':
+            for key in data_file:
+                with open(key + "_" + out_file, 'w') as out_file:
+                    np.savetxt(out_file, data_file[key], delimiter=',', fmt="%.5f")
+        else:
+            raise ValueError(f"Format not supported for out_file parameter {out_file}")
+    print("Parsing completed!")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='decode_evaluation.py',
-        description='Decode results of compute_metrics.py from an .npz file to a .txt file (human-readable)',
+        description='Decode results of compute_metrics.py from an .npz file to a .txt or .csv file (human-readable)',
         epilog='')
 
     parser.add_argument("in_file", help=".npz file to be decoded")
